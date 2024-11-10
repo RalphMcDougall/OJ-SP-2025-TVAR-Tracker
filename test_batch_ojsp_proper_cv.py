@@ -9,7 +9,7 @@ colorama.init(autoreset=True)
 import classic_models
 import data_generation_utils
 import settings
-import plotting
+import results
 import pf_utils
 import file_management
 import foo_utils
@@ -182,11 +182,11 @@ for dataset_ind, dm in enumerate(testset.datasets):
 
 
     if dataset_ind == 0:
-        plotting.plot_sigma_estimates(alpha_mean_history, beta_mean_history, None, f"{TEST_NAME_PREFIX}_sigma_tracking")
+        results.plot_sigma_estimates(alpha_mean_history, beta_mean_history, None, f"{TEST_NAME_PREFIX}_sigma_tracking")
         proc_coefs = np.zeros(a_mean_history.shape)
         proc_coefs[:,0] = 2
         proc_coefs[:,1] = -1
-        plotting.plot_ar_coefficient_estimates_with_cp(a_mean_history, a_cov_history, proc_coefs, f"{TEST_NAME_PREFIX}_process_coefficient_tracking")
+        results.plot_ar_coefficient_estimates_with_cp(a_mean_history, a_cov_history, proc_coefs, f"{TEST_NAME_PREFIX}_process_coefficient_tracking")
         
 
     log_lik_results[TVAR_IND,dataset_ind] = pf_utils.get_mean_log_evidence(predictive_log_likelihood_history)
@@ -231,5 +231,12 @@ print("RMSE Rank averages:", np.mean(foo_utils.get_rankings(rmse_results, False)
 print("RMSE means:", np.mean(rmse_results, axis=1))
 print("Pred RMSE Rank averages:", np.mean(foo_utils.get_rankings(predictive_rmse_results, False), axis=1))
 print("Pred RMSE means:", np.mean(predictive_rmse_results, axis=1))
+
+
+result_table = np.zeros((2, 2))
+result_table[:,0] = np.mean(rmse_results, axis=1)
+result_table[:,1] = np.mean(predictive_rmse_results, axis=1)
+
+results.export_result_table(np.round(result_table, 2), TEST_NAME_PREFIX + "_rmse")
 
 input("")

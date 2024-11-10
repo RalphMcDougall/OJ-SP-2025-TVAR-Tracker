@@ -516,3 +516,7 @@ def plot_particle_rmse_history(particle_history, ground_truth_history, burn_in):
     axs = prepare_axis(axs, "RMSE history", "Time", "RMSE", False)
     prepare_figure(fig, "", None, None, None)
     fig.show()
+
+
+def export_result_table(data : np.ndarray, file_name : str):
+    np.savetxt(f"output/{file_name}.csv", data, delimiter=",")

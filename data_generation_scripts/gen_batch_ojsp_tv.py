@@ -4,7 +4,7 @@ import settings
 import data_generation_utils
 from file_management import FileManager, TestsetManager, DatasetManager
 
-import plotting
+import results
 
 ############################################################################
 # DATA GENERATION
@@ -59,9 +59,9 @@ for training_ind in range(NUM_TRAINING_SETS):
     dm.process_coefficients = true_process_coefficients
     
     if training_ind == 0:
-        plotting.plot_trajectory_plot(None, data, ground_truth_position, training_generation_params, f"{DATASET_NAME}_training_data")
-        plotting.plot_ar_coefficient_estimates(None, None, true_process_coefficients, f"{DATASET_NAME}_process_coefficients")
-        plotting.plot_pole_trajectory(true_process_coefficients, f"{DATASET_NAME}_pole_trajectory")
+        results.plot_trajectory_plot(None, data, ground_truth_position, training_generation_params, f"{DATASET_NAME}_training_data")
+        results.plot_ar_coefficient_estimates(None, None, true_process_coefficients, f"{DATASET_NAME}_process_coefficients")
+        results.plot_pole_trajectory(true_process_coefficients, f"{DATASET_NAME}_pole_trajectory")
 
     testset.add_training_set(dm)
 
@@ -76,7 +76,7 @@ for test_ind in range(NUM_TESTS):
     dm.process_coefficients = true_process_coefficients
     
     if test_ind % 5 == 0:
-        plotting.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, f"{DATASET_NAME}_trajectory_d_{test_ind + 1}" if test_ind == 0 else None)
+        results.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, f"{DATASET_NAME}_trajectory_d_{test_ind + 1}" if test_ind == 0 else None)
     testset.add_dataset(dm)
 
 

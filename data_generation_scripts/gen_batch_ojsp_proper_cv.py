@@ -4,7 +4,7 @@ import settings
 import data_generation_utils
 import file_management
 
-import plotting
+import results
 
 ############################################################################
 # DATA GENERATION
@@ -59,7 +59,7 @@ for training_ind in range(NUM_TRAINING_SETS):
     dm.process_coefficients = true_process_coefficients
     
     if training_ind == 0:
-        plotting.plot_trajectory_plot(None, data, ground_truth_position, training_generation_params, f"{DATASET_NAME}_training_data")
+        results.plot_trajectory_plot(None, data, ground_truth_position, training_generation_params, f"{DATASET_NAME}_training_data")
 
     testset.add_training_set(dm)
 
@@ -74,7 +74,7 @@ for test_ind in range(NUM_TESTS):
     dm.process_coefficients = true_process_coefficients
     
     if test_ind % 5 == 0:
-        plotting.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, None)
+        results.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, None)
     testset.add_dataset(dm)
 
 

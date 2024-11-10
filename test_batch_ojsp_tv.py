@@ -10,7 +10,7 @@ colorama.init(autoreset=True)
 import classic_models
 import data_generation_utils
 import settings
-import plotting
+import results
 import pf_utils
 import file_management
 import foo_utils
@@ -300,11 +300,11 @@ for dataset_ind, dm in enumerate(testset.datasets):
 
 
     if dataset_ind == 0:
-        plotting.plot_ar_coefficient_estimates(a_mean_history, a_cov_history, dm.process_coefficients, f"{TEST_NAME_PREFIX}_process_coefficient_tracking")
+        results.plot_ar_coefficient_estimates(a_mean_history, a_cov_history, dm.process_coefficients, f"{TEST_NAME_PREFIX}_process_coefficient_tracking")
         if not tvar_tracker_params.sigma_oracle_prior:
-            plotting.plot_sigma_estimates(alpha_mean_history, beta_mean_history, data_generation_params.ar_generation_params.innovation_variance, f"{TEST_NAME_PREFIX}_sigma_tracking")
+            results.plot_sigma_estimates(alpha_mean_history, beta_mean_history, data_generation_params.ar_generation_params.innovation_variance, f"{TEST_NAME_PREFIX}_sigma_tracking")
         for t in [20, 50, 80]:
-            plotting.plot_pole_dist(particle_process_coefficient_history[t], 
+            results.plot_pole_dist(particle_process_coefficient_history[t], 
                                         particle_coefficient_cov_history[t], 
                                         log_weight_history[t], dm.process_coefficients[t], f"{TEST_NAME_PREFIX}_d1_pole_dist_{t}", 
                                         [[0.1, 1.2], [-1.1, 1.1]])
@@ -407,6 +407,16 @@ print("RMSE Rank averages:", np.mean(foo_utils.get_rankings(rmse_results, False)
 print("RMSE means:", np.mean(rmse_results, axis=1))
 print("Pred RMSE Rank averages:", np.mean(foo_utils.get_rankings(predictive_rmse_results, False), axis=1))
 print("Pred RMSE means:", np.mean(predictive_rmse_results, axis=1))
-plotting.plot_ranking_comparison(foo_utils.get_rankings(rmse_results, False), ["TVAR", "CV", "WNA", "Singer"], "Filtering accuracy rankings", f"{TEST_NAME_PREFIX}_mse_rankings")
-plotting.plot_ranking_comparison(foo_utils.get_rankings(predictive_rmse_results, False), ["TVAR", "CV", "WNA", "Singer"], "Prediction accuracy rankings", f"{TEST_NAME_PREFIX}_predictive_mse_rankings")
+results.plot_ranking_comparison(foo_utils.get_rankings(rmse_results, False), ["TVAR", "CV", "WNA", "Singer"], "Filtering accuracy rankings", f"{TEST_NAME_PREFIX}_mse_rankings")
+results.plot_ranking_comparison(foo_utils.get_rankings(predictive_rmse_results, False), ["TVAR", "CV", "WNA", "Singer"], "Prediction accuracy rankings", f"{TEST_NAME_PREFIX}_predictive_mse_rankings")
+
+
+result_table = np.zeros((4, 4))
+result_table[:,0] = np.mean(rmse_results, axis=1)
+result_table[:,1] = np.mean(foo_utils.get_rankings(rmse_results, False), axis=1)
+result_table[:,2] = np.mean(predictive_rmse_results, axis=1)
+result_table[:,1] = np.mean(foo_utils.get_rankings(predictive_rmse_results, False), axis=1)
+
+results.export_result_table(np.round(result_table, 2), TEST_NAME_PREFIX + "_rmse")
+
 input("")
