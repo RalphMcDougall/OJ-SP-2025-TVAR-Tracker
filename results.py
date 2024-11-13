@@ -181,7 +181,7 @@ def plot_ar_coefficient_estimates(a_mean_history : np.ndarray, a_cov_history : n
             this_ax.plot(a_mean_history[model_order:, i], c=BLACK, label="Mean", **PRIMARY_STYLE_KWARGS)
             this_ax.plot(a_mean_history[model_order:, i] + GAUSSIAN_CONFIDENCE_95 * np.sqrt(a_cov_history[model_order:, i, i]), label="95% confidence", **ERROR_BAR_STYLE_KWARGS)
             this_ax.plot(a_mean_history[model_order:, i] - GAUSSIAN_CONFIDENCE_95 * np.sqrt(a_cov_history[model_order:, i, i]), **ERROR_BAR_STYLE_KWARGS)
-        this_ax = prepare_axis(this_ax, "", "Time" if i == model_order - 1 else "", "$a_{" + str(i + 1) + "}$", i == 0)
+        this_ax = prepare_axis(this_ax, "", "Time [s]" if i == model_order - 1 else "", "$a_{" + str(i + 1) + "}$", i == 0)
     prepare_figure(fig, None, None, None, None)
     save_figure(fig, "output", file_name)
     fig.show()
@@ -199,7 +199,7 @@ def plot_ar_coefficient_estimates_with_cp(a_mean_history : np.ndarray, a_cov_his
             this_ax.plot(a_mean_history[model_order:, i], c=BLACK, label="Mean", **PRIMARY_STYLE_KWARGS)
             this_ax.plot(a_mean_history[model_order:, i] + GAUSSIAN_CONFIDENCE_95 * np.sqrt(a_cov_history[model_order:, i, i]), label="95% confidence", **ERROR_BAR_STYLE_KWARGS)
             this_ax.plot(a_mean_history[model_order:, i] - GAUSSIAN_CONFIDENCE_95 * np.sqrt(a_cov_history[model_order:, i, i]), **ERROR_BAR_STYLE_KWARGS)
-        this_ax = prepare_axis(this_ax, "", "Time" if i == model_order - 1 else "", "$a_{" + str(i + 1) + "}$", i == 0)
+        this_ax = prepare_axis(this_ax, "", "Time [s]" if i == model_order - 1 else "", "$a_{" + str(i + 1) + "}$", i == 0)
     prepare_figure(fig, None, None, None, None)
     save_figure(fig, "output", file_name)
     fig.show()
@@ -395,7 +395,7 @@ def plot_sigma_estimates(alpha_mean_history, beta_mean_history, ground_truth, fi
     axs.semilogy(lower_vals, label="95% confidence", **ERROR_BAR_STYLE_KWARGS)
     axs.semilogy(upper_vals, label=None, **ERROR_BAR_STYLE_KWARGS)
 
-    prepare_axis(axs, None, "Time", "$\\sigma^2$", True)
+    prepare_axis(axs, None, "Time [s]", "$\\sigma^2$", True)
     prepare_figure(fig, "", None, None, None)
     if file_name is not None:
         save_figure(fig, "output", file_name)
@@ -501,7 +501,7 @@ def plot_eff_sample_size(effective_num_particles_history : np.ndarray, params : 
     axs.axhline(params.num_particles, c=get_standard_colour(2), **SECONDARY_STYLE_KWARGS, label="Num particles")
     axs.axhline(params.min_particles, c=get_standard_colour(1), **SECONDARY_STYLE_KWARGS, label="Resampling threshold")
     axs.set_ylim([0, params.num_particles * 1.1])
-    axs = prepare_axis(axs, "Effective particles", "Time", "Num particles", True)
+    axs = prepare_axis(axs, "Effective particles", "Time [s]", "Num particles", True)
     prepare_figure(fig, "", None, None, None)
     save_figure(fig, "figs", file_name)
     fig.show()
@@ -513,7 +513,7 @@ def plot_particle_rmse_history(particle_history, ground_truth_history, burn_in):
 
     axs.plot(np.arange(burn_in, ground_truth_history.shape[0]), rmse_history)
 
-    axs = prepare_axis(axs, "RMSE history", "Time", "RMSE", False)
+    axs = prepare_axis(axs, "RMSE history", "Time [s]", "RMSE", False)
     prepare_figure(fig, "", None, None, None)
     fig.show()
 

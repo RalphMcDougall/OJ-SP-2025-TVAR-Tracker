@@ -28,7 +28,7 @@ def log_effective_num_particles(log_weights):
     return -1 * array_logaddexp(2 * log_weights)
 
 
-def inv(A):
+def inv(A : np.ndarray) -> np.ndarray:
     # Performing all matrix inversions on the GPU really speeds things up!
     if CUPY_IMPORT_SUCCESSFUL:
         A_gpu = cp.asarray(A)
@@ -39,7 +39,7 @@ def inv(A):
     return A_inv
 
 
-def transpose_last2(A):
+def transpose_last2(A : np.ndarray):
     new_order = list(range(len(A.shape)))
     new_order[-2:] = new_order[-2:][::-1]
     return np.transpose(A, new_order)
@@ -214,3 +214,18 @@ def get_rankings(scores : np.ndarray, higher_better):
     if higher_better:
         res = scores.shape[0] - res - 1
     return res + 1 
+
+
+def jin_ar_est(model_order : int, poly_order, P : np.ndarray):
+    vandermonde = np.vander(np.arange(1, model_order + 1), N=poly_order + 1, increasing=True).T 
+
+    unit = np.zeros((poly_order + 1, 1))
+    unit[0] = 1
+
+    #print(vandermonde)
+
+    #quit()
+    inv_P = inv(P)
+    ar_coefficients = inv_P @ vandermonde.T @ inv(vandermonde @ inv_P @ vandermonde.T) @ unit 
+
+    return ar_coefficients

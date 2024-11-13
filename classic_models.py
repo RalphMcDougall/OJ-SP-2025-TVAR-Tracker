@@ -22,7 +22,7 @@ class KalmanFilter:
     def predict_state(self):
         return self.A @ self.m, self.A @ self.P @ self.A.T + self.Q 
 
-    def update(self, measurement):
+    def update(self, measurement : np.ndarray):
         m_pred, P_pred = self.predict_state()
 
         innovation = measurement - self.H @ m_pred
@@ -329,3 +329,122 @@ def get_model_performance(model : KalmanFilter, cluttered_data : np.ndarray, gro
 def mahalanobis(data, mean, cov):
     diff = data - mean 
     return (np.sqrt(foo_utils.transpose_last2(diff) @ foo_utils.inv(cov) @ diff)).flatten()
+
+
+
+class JinTracker(KalmanFilter):
+
+    @staticmethod 
+    def base_H(order):
+        mat = np.zeros((1, order))
+        mat[0,0] = 1
+
+        return mat 
+    
+    @staticmethod 
+    def base_A(order : int):
+        mat = np.zeros((order, order))
+        for i in range(1, order):
+            mat[i, i - 1] = 1
+        
+        return mat 
+    
+    def base_Q(order : int):
+        mat = np.zeros((order, order))
+        mat[0,0] = 1
+        return mat 
+    
+    def base_R():
+        mat = np.array([[1]])
+
+        return mat 
+
+    def __init__(self, dim : int, model_order : int, polynomial_order : int, window_size : int, innovation_variance : float, noise_variance : float, initial_mean : np.ndarray):
+
+        self.dim_trackers = [KalmanFilter(
+            JinTracker.base_A(model_order), 
+            JinTracker.base_Q(model_order) * innovation_variance, 
+            JinTracker.base_H(model_order),
+            JinTracker.base_R() * noise_variance,
+            initial_mean[:,d], 
+            np.identity(model_order) * noise_variance
+        ) for d in range(dim)]
+
+        self.window_size = window_size
+        self.squared_deviation_history = np.zeros((dim, self.window_size))
+        self.history_filled = 0
+
+        self.dim = dim
+        self.model_order = model_order
+        self.polynomial_order = polynomial_order
+
+        self.S_ests = np.zeros((dim, 1, 1))
+    
+    
+    def update(self, measurement : np.ndarray):
+        self.history_filled = min(self.history_filled + 1, self.window_size)
+
+        for d in range(self.dim):
+            #print(" CHECK", d)
+            coefficients = foo_utils.jin_ar_est(self.model_order, self.polynomial_order, self.dim_trackers[d].P)
+
+            #print("M", self.dim_trackers[d].m)
+            self.dim_trackers[d].A[0,:] = coefficients[:,0]
+            #print(self.dim_trackers[d].A)
+
+            m_pred, P_pred = self.dim_trackers[d].predict_state()
+            #print("M PRED", m_pred)
+            deviation = measurement[d] - self.dim_trackers[d].H @ m_pred
+            #print("MEAS", measurement[d])
+            #print("DEV", deviation)
+            #print(measurement.shape)
+            #print(deviation.shape) 
+            self.squared_deviation_history[d, 1:self.history_filled] = self.squared_deviation_history[d, 0:self.history_filled - 1]
+            self.squared_deviation_history[d, 0] = deviation ** 2
+
+            #print(self.squared_deviation_history[d,:])
+
+            #print(self.squared_deviation_history[:self.history_filled].shape)
+            if self.history_filled == self.window_size:
+                self.S_ests[d,:,:] = np.mean(self.squared_deviation_history[d,:])[None,None]
+            else:
+                self.S_ests[d,:,:] = self.S_ests[d,:,:] * (self.history_filled - 1) / self.history_filled + np.mean(self.squared_deviation_history[d,:self.history_filled])[None,None]
+
+            K = P_pred @ self.dim_trackers[d].H.T @ np.linalg.inv(self.dim_trackers[d].H @ P_pred @ self.dim_trackers[d].H.T + self.dim_trackers[d].R)
+
+            self.dim_trackers[d].m = m_pred + K @ deviation
+            self.dim_trackers[d].P = (np.identity(self.model_order) - K @ self.dim_trackers[d].H) @ P_pred
+
+            #print(K.shape)
+            #print(K)
+            #print(self.S_ests[d].shape)
+            #print(self.S_ests[d])
+            self.dim_trackers[d].Q = K @ self.S_ests[d,:,:] @ K.T
+            #self.dim_trackers[d].R = self.S_ests[d] - self.dim_trackers[d].H @ P_pred @ self.dim_trackers[d].H.T 
+
+            #self.dim_trackers[d].update(measurement[d])
+            #print(str(self.dim_trackers[d]))
+        #if self.history_filled > 4:
+        #    quit()
+
+    def get_position_state(self):
+        m = np.zeros((self.dim, 1))
+        P = np.zeros((self.dim, self.dim))
+
+        for d in range(self.dim):
+            m[d] = self.dim_trackers[d].m[0]
+            P[d,d] = self.dim_trackers[d].P[0,0]
+        
+        return m, P 
+    
+    def get_predicted_position_state(self):
+        m = np.zeros((self.dim, 1))
+        P = np.zeros((self.dim, self.dim))
+
+        for d in range(self.dim):
+            m_pred, P_pred = self.dim_trackers[d].predict_state()
+            m[d] = m_pred[0]
+            P[d,d] = P_pred[0,0]
+        
+        return m, P 
+    
