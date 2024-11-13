@@ -1,0 +1,4 @@
+# These are the requirements to run certain matrix operations on the system GPU.
+# These are not required to run the program, but it runs significantly faster on a GPU.
+pycuda==2024.1
+cupy-cuda12x==13.0.0

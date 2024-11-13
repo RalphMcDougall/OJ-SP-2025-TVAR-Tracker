@@ -1,0 +1,8 @@
+# Requirements to run the project properly
+numpy==1.26.1
+scipy==1.11.3
+matplotlib==3.8.1
+pandas==2.1.2
+tqdm==4.66.1
+jsonpickle==3.2.2
+colorama==0.4.6
