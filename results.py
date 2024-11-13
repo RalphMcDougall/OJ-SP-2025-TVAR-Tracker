@@ -523,4 +523,4 @@ def plot_particle_rmse_history(particle_history, ground_truth_history, burn_in):
 
 def export_result_table(data : np.ndarray, file_name : str):
     df = pd.DataFrame(data)
-    df.to_csv(f"output/{file_name}.csv", index=False, header=False, line_terminator="\n", float_format="%.3f")
+    df.to_csv(f"output/{file_name}.csv", index=False, header=False, lineterminator="\n", float_format="%.3g")

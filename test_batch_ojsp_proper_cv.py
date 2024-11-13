@@ -237,6 +237,6 @@ result_table = np.zeros((2, 2))
 result_table[:,0] = np.mean(rmse_results, axis=1)
 result_table[:,1] = np.mean(predictive_rmse_results, axis=1)
 
-results.export_result_table(np.round(result_table, 2), TEST_NAME_PREFIX + "_rmse")
+results.export_result_table(result_table, TEST_NAME_PREFIX + "_rmse")
 
 input("")

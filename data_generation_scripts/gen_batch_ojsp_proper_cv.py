@@ -11,7 +11,7 @@ import results
 ############################################################################
 
 GENERATION_SEED = 1725833889
-print(GENERATION_SEED)
+print("SEED", GENERATION_SEED)
 training_generation_params = settings.DataGenerationParameters(GENERATION_SEED)
 training_generation_params.set_current()
 
