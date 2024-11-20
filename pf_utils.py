@@ -485,7 +485,7 @@ def get_ground_truth_predictive_likelihood(ground_truth_history : np.ndarray, pa
     return res / (sim_time - 1 - burn_in)
 
 
-def get_model_performance(cluttered_data : np.ndarray, ground_truth : np.ndarray, ground_truth_ar : np.ndarray, burn_in : int, params : settings.TVARTrackerParameters):
+def get_model_performance(cluttered_data : list[np.ndarray], ground_truth : np.ndarray, ground_truth_ar : np.ndarray, burn_in : int, params : settings.TVARTrackerParameters):
     particle_history, log_likelihood_history = run_pf_tracking(cluttered_data, params, ground_truth, ground_truth_ar, False)
     return get_mean_log_evidence(log_likelihood_history, burn_in)
 

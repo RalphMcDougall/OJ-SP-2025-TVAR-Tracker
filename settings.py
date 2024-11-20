@@ -138,7 +138,7 @@ class PFParameters:
         return math.ceil(self.num_particles * self.min_particle_factor)
 
 
-class TrackerParameters(Seeder):
+class TrackerParameters(Seeder): # TODO: Can probably refactor this out
     def __init__(self, seed = None):
         super().__init__(seed)
 
@@ -203,7 +203,6 @@ class ClassicalStructuralTrackerParameters:
         self.simulation_time = None 
         self.observation_dimensions = None
 
-        self.process_instance_params = ProcessInstanceParameters()
         self.measurement_params = MeasurementParameters()
 
         self.z_oracle_prior = None  
@@ -218,7 +217,6 @@ class ClassicalStructuralTrackerParameters:
         new_params.simulation_time = self.simulation_time
         new_params.observation_dimensions = self.observation_dimensions
 
-        new_params.process_instance_params = self.process_instance_params.copy()
         new_params.measurement_params = self.measurement_params.copy()
 
         new_params.z_oracle_prior = self.z_oracle_prior
@@ -226,6 +224,93 @@ class ClassicalStructuralTrackerParameters:
         new_params.state_dynamic_variance = self.state_dynamic_variance
         new_params.singer_rate = self.singer_rate
         
+        return new_params
+
+
+class IMMTrackerParameters:
+    def __init__(self):
+        self.simulation_time = None 
+        self.observation_dimensions = None
+
+        self.measurement_params = MeasurementParameters()
+
+        self.z_oracle_prior = None  
+
+        self.model_params : list[ClassicalStructuralTrackerParameters] | None = None 
+    
+
+    def copy(self):
+        new_params = IMMTrackerParameters()
+
+        new_params.simulation_time = self.simulation_time
+        new_params.observation_dimensions = self.observation_dimensions
+
+        new_params.measurement_params = self.measurement_params.copy()
+
+        new_params.z_oracle_prior = self.z_oracle_prior
+
+        new_params.model_params = [m_params.copy() for m_params in self.model_params]
+        
+        return new_params
+
+
+class Jin2017TrackerParameters:
+    def __init__(self):
+        self.simulation_time = None 
+        self.observation_dimensions = None
+
+        self.measurement_params = MeasurementParameters()
+
+        self.z_oracle_prior = None  
+
+        self.model_order = None 
+        self.polynomial_order = None 
+        self.window = None 
+        self.innovation_variance = None
+
+    def copy(self):
+        new_params = Jin2017TrackerParameters()
+
+        new_params.simulation_time = self.simulation_time
+        new_params.observation_dimensions = self.observation_dimensions
+
+        new_params.measurement_params = self.measurement_params.copy()
+
+        new_params.z_oracle_prior = self.z_oracle_prior
+
+        new_params.model_order = self.model_order
+        new_params.polynomial_order = self.polynomial_order
+        new_params.window = self.window 
+        new_params.innovation_variance = self.innovation_variance
+
+        return new_params
+
+
+class CovarianceMethodARParameters:
+    def __init__(self):
+        self.simulation_time = None 
+        self.observation_dimensions = None
+
+        self.measurement_params = MeasurementParameters()
+
+        self.z_oracle_prior = None  
+
+        self.state_dynamic_variance = None 
+        self.model_order = None
+
+    def copy(self):
+        new_params = CovarianceMethodARParameters()
+
+        new_params.simulation_time = self.simulation_time
+        new_params.observation_dimensions = self.observation_dimensions
+
+        new_params.measurement_params = self.measurement_params.copy()
+
+        new_params.z_oracle_prior = self.z_oracle_prior
+
+        new_params.state_dynamic_variance = self.state_dynamic_variance
+        new_params.model_order = self.model_order
+
         return new_params
 
 
@@ -250,3 +335,27 @@ class DataGenerationParameters(Seeder):
 
         return copied_params
 
+
+def inject_data_generation_params(params : TVARTrackerParameters | ClassicalStructuralTrackerParameters | Jin2017TrackerParameters | CovarianceMethodARParameters, data_generation_params : DataGenerationParameters):
+    new_params = params.copy()
+
+    new_params.simulation_time = data_generation_params.simulation_time
+    new_params.observation_dimensions = data_generation_params.observation_dimensions
+
+    new_params.measurement_params = data_generation_params.measurement_params.copy()
+
+    return new_params 
+
+
+def inject_imm_data_generation_params(params : IMMTrackerParameters, data_generation_params : DataGenerationParameters):
+    new_params = params.copy()
+
+    new_params.simulation_time = data_generation_params.simulation_time
+    new_params.observation_dimensions = data_generation_params.observation_dimensions
+
+    new_params.measurement_params = data_generation_params.measurement_params.copy()
+
+    for i in range(len(params.model_params)):
+        new_params.model_params[i] = inject_data_generation_params(new_params.model_params[i], data_generation_params)
+
+    return new_params 

@@ -7,7 +7,7 @@ import pf_utils
 import classic_models
 
 
-def optimise_tvar_tracker(cluttered_data, ground_truth_position, true_process_coefficients, tvar_tracker_params : settings.TVARTrackerParameters):
+def optimise_tvar_tracker(cluttered_data : list[np.ndarray], ground_truth_position : np.ndarray, true_process_coefficients : np.ndarray, tvar_tracker_params : settings.TVARTrackerParameters):
     print(f"{colorama.Fore.CYAN}Optimising TVAR")
     inn_to_noise_range = np.logspace(start=-1, stop=1, num=25)
 
@@ -34,7 +34,7 @@ def optimise_tvar_tracker(cluttered_data, ground_truth_position, true_process_co
     return best_params 
 
 
-def optimise_cv_tracker(cluttered_data, ground_truth_position, burn_in, cv_tracker_params : settings.ClassicalStructuralTrackerParameters):
+def optimise_cv_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, cv_tracker_params : settings.ClassicalStructuralTrackerParameters):
     print(f"{colorama.Fore.CYAN}Optimising CV")
     cv_params_range = np.logspace(start=-4, stop=-2, num=100)
     best_value = -np.inf 
@@ -57,7 +57,7 @@ def optimise_cv_tracker(cluttered_data, ground_truth_position, burn_in, cv_track
     return best_params
 
 
-def optimise_wna_tracker(cluttered_data, ground_truth_position, burn_in, wna_tracker_params : settings.ClassicalStructuralTrackerParameters):
+def optimise_wna_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, wna_tracker_params : settings.ClassicalStructuralTrackerParameters):
     print(f"{colorama.Fore.CYAN}Optimising WNA")
     wna_params_range = np.logspace(start=-2, stop=2, num=100)
     best_value = -np.inf 
@@ -79,7 +79,29 @@ def optimise_wna_tracker(cluttered_data, ground_truth_position, burn_in, wna_tra
     return best_params
 
 
-def optimise_singer_tracker(cluttered_data, ground_truth_position, burn_in, singer_tracker_params : settings.ClassicalStructuralTrackerParameters):
+def optimise_wcm_ar_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, wcm_ar_tracker_params : settings.CovarianceMethodARParameters):
+    print(f"{colorama.Fore.CYAN}Optimising CM-AR")
+    wcm_ar_params_range = np.logspace(start=-2, stop=2, num=100)
+    best_value = -np.inf 
+    best_pars = None 
+    best_params = None 
+    for pars in tqdm(wcm_ar_params_range):
+        test_params = wcm_ar_tracker_params.copy()
+        test_params.state_dynamic_variance = pars
+        model = classic_models.setup_windowed_covariance_method_ar(ground_truth_position, test_params)
+        value = classic_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        if value > best_value:
+            best_value = value 
+            best_pars = pars
+            best_params = test_params  
+    
+    if wcm_ar_params_range.size > 1 and best_pars in [min(wcm_ar_params_range), max(wcm_ar_params_range)]:
+        print(f"{colorama.Fore.LIGHTYELLOW_EX}Warning: the optimal parameter is on the boundary of the search region.")
+    print(f"Best value: {colorama.Fore.GREEN}{best_value} {colorama.Fore.WHITE}at {colorama.Fore.LIGHTYELLOW_EX}{best_pars}")
+    return best_params
+
+
+def optimise_singer_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, singer_tracker_params : settings.ClassicalStructuralTrackerParameters):
     print(f"{colorama.Fore.CYAN}Optimising Singer")
     singer_params_range = []
 
@@ -107,3 +129,77 @@ def optimise_singer_tracker(cluttered_data, ground_truth_position, burn_in, sing
         print(f"{colorama.Fore.LIGHTYELLOW_EX}Warning: the optimal parameter is on the boundary of the search region.")
     print(f"Best value: {colorama.Fore.GREEN}{best_value} {colorama.Fore.WHITE}at {colorama.Fore.LIGHTYELLOW_EX}{best_pars}")
     return best_params 
+
+
+def optimise_double_singer_imm(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, imm_params : settings.IMMTrackerParameters):
+    print(f"{colorama.Fore.CYAN}Optimising double-Singer IMM")
+    
+    imm_params_range = []
+
+    scale_range_1 = np.logspace(start=-1, stop=1, num=8)
+    alpha_range_1 = np.logspace(start=-1, stop=1, num=8)
+    scale_range_2 = np.logspace(start=-1, stop=1, num=8)
+    alpha_range_2 = np.logspace(start=-1, stop=1, num=8)
+
+    for scale_1 in scale_range_1:
+        for alpha_1 in alpha_range_1:
+            for scale_2 in scale_range_2:
+                if scale_2 < scale_1:
+                    continue 
+                for alpha_2 in alpha_range_2:
+                    imm_params_range.append([scale_1, alpha_1, scale_2, alpha_2])
+    
+    best_value = -np.inf 
+    best_params = None 
+    best_pars = None 
+
+    for pars in tqdm(imm_params_range):
+        test_params = imm_params.copy()
+
+        test_params.model_params[0].state_dynamic_variance = pars[0]
+        test_params.model_params[0].singer_rate = pars[1]
+        test_params.model_params[1].state_dynamic_variance = pars[2]
+        test_params.model_params[1].singer_rate = pars[3]
+
+        model = classic_models.setup_double_singer_imm(ground_truth_position, test_params)
+        value = classic_models.get_imm_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+
+        if value > best_value:
+            best_value = value
+            best_pars = pars
+            best_params = test_params.copy()
+
+    print(f"Best value: {colorama.Fore.GREEN}{best_value} {colorama.Fore.WHITE}at {colorama.Fore.LIGHTYELLOW_EX}{best_pars}")
+    return best_params
+
+
+def optimise_jin2017_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, jin2017_tracker_params : settings.Jin2017TrackerParameters, data_generation_params : settings.DataGenerationParameters):
+    print(f"{colorama.Fore.CYAN}Optimising Jin2017")
+    jin2017_params_range = []
+
+    for polynomial_order in range(1, 5):
+        for model_order in range(polynomial_order + 2, 8):
+            for window_size in range(10, 60, 10):
+                for innovation_variance in np.logspace(start=1E-1, stop=1E0, num=10):
+                    jin2017_params_range.append([model_order, polynomial_order, window_size, innovation_variance])
+    
+    best_value = -np.inf 
+    best_params = None 
+    best_pars = None 
+
+    for pars in tqdm(jin2017_params_range):
+        test_params = jin2017_tracker_params.copy()
+        test_params.model_order = pars[0]
+        test_params.polynomial_order = pars[1]
+        test_params.window = pars[2]
+        test_params.innovation_variance = pars[3]
+
+        value = classic_models.get_jin2017_model_performance(cluttered_data, ground_truth_position, data_generation_params, test_params, burn_in)
+
+        if value > best_value:
+            best_value = value
+            best_pars = pars
+            best_params = test_params.copy()
+
+    print(f"Best value: {colorama.Fore.GREEN}{best_value} {colorama.Fore.WHITE}at {colorama.Fore.LIGHTYELLOW_EX}{best_pars}")
+    return best_params

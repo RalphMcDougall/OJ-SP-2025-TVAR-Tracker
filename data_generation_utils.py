@@ -156,8 +156,6 @@ def generate_smooth_ojsp_ar_parameters(params : settings.DataGenerationParameter
     damping_factor = np.exp(-params.ar_generation_params.max_damping)
     variation_scale = 0.8
     variation_frequency = 1 * np.pi / 100
-    print("Freq =", variation_frequency / np.pi, "* PI")
-    print("Damping factor =", damping_factor)
 
     for current_timestep in range(params.simulation_time):
         if params.ar_generation_params.process_order % 2 == 1:

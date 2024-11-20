@@ -3,13 +3,16 @@ import scipy.stats
 import matplotlib.pyplot as plt
 import matplotlib.patches
 
+import colorama
+import matplotlib.pyplot as plt
+
+import pandas as pd
+
 from pf_utils import ParticleCloud
 import pf_utils
 import settings 
 import data_generation_utils
 
-import colorama
-import matplotlib.pyplot as plt
 
 # Support for a standard set of nice colours. Some colours 
 # are obtained from the XKCD colours list: https://xkcd.com/color/rgb/
@@ -519,4 +522,5 @@ def plot_particle_rmse_history(particle_history, ground_truth_history, burn_in):
 
 
 def export_result_table(data : np.ndarray, file_name : str):
-    np.savetxt(f"output/{file_name}.csv", data, delimiter=",")
+    df = pd.DataFrame(data)
+    df.to_csv(f"output/{file_name}.csv", index=False, header=False, lineterminator="\n", float_format="%.3g")

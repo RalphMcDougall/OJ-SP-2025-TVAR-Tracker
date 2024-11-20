@@ -1,4 +1,5 @@
 import numpy as np
+import colorama
 
 import settings
 import data_generation_utils
@@ -11,7 +12,7 @@ import results
 ############################################################################
 
 GENERATION_SEED = 1725833504
-print(GENERATION_SEED)
+print("SEED", GENERATION_SEED)
 training_generation_params = settings.DataGenerationParameters(GENERATION_SEED)
 training_generation_params.set_current()
 
@@ -82,4 +83,4 @@ for test_ind in range(NUM_TESTS):
 
 FileManager.write(testset, f"datasets/{DATASET_NAME}")
 
-input("")
+input(f"{colorama.Fore.GREEN}Done.")

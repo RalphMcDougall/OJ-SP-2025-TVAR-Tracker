@@ -215,17 +215,3 @@ def get_rankings(scores : np.ndarray, higher_better):
         res = scores.shape[0] - res - 1
     return res + 1 
 
-
-def jin_ar_est(model_order : int, poly_order, P : np.ndarray):
-    vandermonde = np.vander(np.arange(1, model_order + 1), N=poly_order + 1, increasing=True).T 
-
-    unit = np.zeros((poly_order + 1, 1))
-    unit[0] = 1
-
-    #print(vandermonde)
-
-    #quit()
-    inv_P = inv(P)
-    ar_coefficients = inv_P @ vandermonde.T @ inv(vandermonde @ inv_P @ vandermonde.T) @ unit 
-
-    return ar_coefficients
