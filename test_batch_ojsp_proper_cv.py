@@ -53,13 +53,13 @@ wna_tracker_params.state_dynamic_variance = testset.datasets[0].generation_param
 
 
 # COVARIANCE METHOD AR PARAMS
-cm_ar_tracker_params = settings.CovarianceMethodARParameters()
-cm_ar_tracker_params.z_oracle_prior = True   
+wcm_ar_tracker_params = settings.CovarianceMethodARParameters()
+wcm_ar_tracker_params.z_oracle_prior = True   
 
 # Parameter optimised on training set
-cm_ar_tracker_params.state_dynamic_variance = 0.9545
+wcm_ar_tracker_params.state_dynamic_variance = 0.9545
 # Model order chosen a priori
-cm_ar_tracker_params.model_order = 2
+wcm_ar_tracker_params.model_order = 2
 
 
 # JIN2017 PARAMS 
@@ -85,7 +85,7 @@ NUM_MODELS = 4
 
 TVAR_IND = 0
 WNA_IND = 1
-CM_AR_IND = 2
+WCM_AR_IND = 2
 JIN_IND = 3
 
 
@@ -98,7 +98,7 @@ training_ground_truth_position = training_dataset.ground_truth
 
 OPTIMISE = False 
 if OPTIMISE:
-    wcm_ar_tracker_params = settings.inject_data_generation_params(cm_ar_tracker_params, training_data_generation_params)
+    wcm_ar_tracker_params = settings.inject_data_generation_params(wcm_ar_tracker_params, training_data_generation_params)
     wcm_ar_tracker_params = optimise.optimise_wcm_ar_tracker(cluttered_data, training_ground_truth_position, burn_in, wcm_ar_tracker_params)
 
     jin2017_tracker_params = settings.inject_data_generation_params(jin2017_tracker_params, training_data_generation_params)
@@ -157,11 +157,11 @@ for dataset_ind, dm in enumerate(testset.datasets):
     full_wna_log_observation_prediction.append(wna_log_observation_prediction)
 
 
-    wcm_ar_tracker_params = settings.inject_data_generation_params(cm_ar_tracker_params, data_generation_params)
+    wcm_ar_tracker_params = settings.inject_data_generation_params(wcm_ar_tracker_params, data_generation_params)
     wcm_ar_model = classic_models.setup_windowed_covariance_method_ar(ground_truth_position, wcm_ar_tracker_params)
-    wcm_ar_model_history, wcm_ar_log_observation_prediction = classic_models.kf_with_nn_association(cm_ar_model, cluttered_data, wcm_ar_tracker_params)
-    full_wcm_ar_model_history.append(cm_ar_model_history)
-    full_wcm_ar_log_observation_prediction.append(cm_ar_log_observation_prediction)
+    wcm_ar_model_history, wcm_ar_log_observation_prediction = classic_models.kf_with_nn_association(wcm_ar_model, cluttered_data, wcm_ar_tracker_params)
+    full_wcm_ar_model_history.append(wcm_ar_model_history)
+    full_wcm_ar_log_observation_prediction.append(wcm_ar_log_observation_prediction)
 
 
     jin2017_tracker_params = settings.inject_data_generation_params(jin2017_tracker_params, data_generation_params)
@@ -208,7 +208,7 @@ for dataset_ind, dm in enumerate(testset.datasets):
 
     wna_tracker_params = settings.inject_data_generation_params(wna_tracker_params, data_generation_params)
 
-    wcm_ar_tracker_params = settings.inject_data_generation_params(cm_ar_tracker_params, data_generation_params)
+    wcm_ar_tracker_params = settings.inject_data_generation_params(wcm_ar_tracker_params, data_generation_params)
 
     jin2017_tracker_params = settings.inject_data_generation_params(jin2017_tracker_params, data_generation_params)
 
@@ -270,17 +270,17 @@ for dataset_ind, dm in enumerate(testset.datasets):
     wcm_ar_log_likelihood = pf_utils.get_mean_log_evidence(wna_log_observation_prediction)
     #print(f"WNA mean log-likelihood: {colorama.Fore.GREEN}{wna_log_likelihood}")
     wcm_ar_state_mean_history, wcm_ar_state_cov_history, wcm_ar_state_to_obs_mean_history, \
-        wcm_ar_state_to_obs_cov_history, wcm_ar_pred_mean_history, wcm_ar_pred_cov_history = classic_models.unpack_model_history(cm_ar_model_history, wcm_ar_tracker_params)
-    wcm_ar_error = classic_models.get_mean_cumulative_rmse_gauss(ground_truth_position, wcm_ar_state_to_obs_mean_history, wcm_ar_state_to_obs_cov_history, burn_in) / np.sqrt(cm_ar_tracker_params.measurement_params.noise_variance)
-    wcm_ar_predictive_error = classic_models.get_mean_cumulative_rmse_gauss(ground_truth_position[1:,:], wcm_ar_pred_mean_history[:-1,:], wcm_ar_pred_cov_history, burn_in) / np.sqrt(cm_ar_tracker_params.measurement_params.noise_variance)
-    print(f"CM-AR error: {colorama.Fore.LIGHTYELLOW_EX}{cm_ar_error}")
-    print(f"CM-AR pred. error: {colorama.Fore.LIGHTYELLOW_EX}{cm_ar_predictive_error}")
+        wcm_ar_state_to_obs_cov_history, wcm_ar_pred_mean_history, wcm_ar_pred_cov_history = classic_models.unpack_model_history(wcm_ar_model_history, wcm_ar_tracker_params)
+    wcm_ar_error = classic_models.get_mean_cumulative_rmse_gauss(ground_truth_position, wcm_ar_state_to_obs_mean_history, wcm_ar_state_to_obs_cov_history, burn_in) / np.sqrt(wcm_ar_tracker_params.measurement_params.noise_variance)
+    wcm_ar_predictive_error = classic_models.get_mean_cumulative_rmse_gauss(ground_truth_position[1:,:], wcm_ar_pred_mean_history[:-1,:], wcm_ar_pred_cov_history, burn_in) / np.sqrt(wcm_ar_tracker_params.measurement_params.noise_variance)
+    print(f"CM-AR error: {colorama.Fore.LIGHTYELLOW_EX}{wcm_ar_error}")
+    print(f"CM-AR pred. error: {colorama.Fore.LIGHTYELLOW_EX}{wcm_ar_predictive_error}")
     wcm_ar_pred_lik = classic_models.get_ground_truth_predictive_likelihood_gauss(ground_truth_position, wcm_ar_pred_mean_history, wcm_ar_pred_cov_history, max(2, burn_in))
     print("")
-    log_lik_results[CM_AR_IND,dataset_ind] = wcm_ar_log_likelihood
-    rmse_results[CM_AR_IND,dataset_ind] = wcm_ar_error
-    predictive_rmse_results[CM_AR_IND,dataset_ind] = wcm_ar_predictive_error
-    gt_lik_results[CM_AR_IND,dataset_ind] = wcm_ar_pred_lik 
+    log_lik_results[WCM_AR_IND,dataset_ind] = wcm_ar_log_likelihood
+    rmse_results[WCM_AR_IND,dataset_ind] = wcm_ar_error
+    predictive_rmse_results[WCM_AR_IND,dataset_ind] = wcm_ar_predictive_error
+    gt_lik_results[WCM_AR_IND,dataset_ind] = wcm_ar_pred_lik 
 
 
     jin_error = classic_models.get_mean_cumulative_rmse_gauss(ground_truth_position, jin_mean_history[dataset_ind], jin_cov_history[dataset_ind], burn_in) / np.sqrt(wna_tracker_params.measurement_params.noise_variance)
@@ -309,7 +309,7 @@ print("")
 
 print("CM-AR result ranges")
 #print(f"LL: {colorama.Fore.LIGHTRED_EX}{np.min(log_lik_results[JIN_IND,:])} -> {colorama.Fore.LIGHTGREEN_EX}{np.max(log_lik_results[JIN_IND,:])}")
-print(f"RMSE: {colorama.Fore.LIGHTGREEN_EX}{np.min(rmse_results[CM_AR_IND,:])} -> {colorama.Fore.LIGHTRED_EX}{np.max(rmse_results[CM_AR_IND,:])}")
+print(f"RMSE: {colorama.Fore.LIGHTGREEN_EX}{np.min(rmse_results[WCM_AR_IND,:])} -> {colorama.Fore.LIGHTRED_EX}{np.max(rmse_results[WCM_AR_IND,:])}")
 print("")
 
 print("JIN result ranges")

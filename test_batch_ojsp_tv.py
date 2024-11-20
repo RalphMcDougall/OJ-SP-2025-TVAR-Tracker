@@ -120,7 +120,7 @@ CV_IND = 1
 WNA_IND = 2
 SINGER_IND = 3
 DS_IMM_IND = 4
-wcm_ar_IND = 5
+WCM_AR_IND = 5
 JIN_IND = 6
 
 
@@ -428,10 +428,10 @@ for dataset_ind, dm in enumerate(testset.datasets):
     print(f"CM-AR pred. error: {colorama.Fore.LIGHTYELLOW_EX}{wcm_ar_predictive_error}")
     wcm_ar_pred_lik = classic_models.get_ground_truth_predictive_likelihood_gauss(ground_truth_position, wcm_ar_pred_mean_history, wcm_ar_pred_cov_history, max(2, burn_in))
     print("")
-    log_lik_results[wcm_ar_IND,dataset_ind] = wcm_ar_log_likelihood
-    rmse_results[wcm_ar_IND,dataset_ind] = wcm_ar_error
-    predictive_rmse_results[wcm_ar_IND,dataset_ind] = wcm_ar_predictive_error
-    gt_lik_results[wcm_ar_IND,dataset_ind] = wcm_ar_pred_lik 
+    log_lik_results[WCM_AR_IND,dataset_ind] = wcm_ar_log_likelihood
+    rmse_results[WCM_AR_IND,dataset_ind] = wcm_ar_error
+    predictive_rmse_results[WCM_AR_IND,dataset_ind] = wcm_ar_predictive_error
+    gt_lik_results[WCM_AR_IND,dataset_ind] = wcm_ar_pred_lik 
 
 
     # Jin
@@ -480,7 +480,7 @@ print("")
 
 print("CM-AR result ranges")
 #print(f"LL: {colorama.Fore.LIGHTRED_EX}{np.min(log_lik_results[JIN_IND,:])} -> {colorama.Fore.LIGHTGREEN_EX}{np.max(log_lik_results[JIN_IND,:])}")
-print(f"RMSE: {colorama.Fore.LIGHTGREEN_EX}{np.min(rmse_results[wcm_ar_IND,:])} -> {colorama.Fore.LIGHTRED_EX}{np.max(rmse_results[wcm_ar_IND,:])}")
+print(f"RMSE: {colorama.Fore.LIGHTGREEN_EX}{np.min(rmse_results[WCM_AR_IND,:])} -> {colorama.Fore.LIGHTRED_EX}{np.max(rmse_results[WCM_AR_IND,:])}")
 print("")
 
 print("JIN result ranges")
