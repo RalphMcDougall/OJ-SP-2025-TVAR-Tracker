@@ -40,14 +40,14 @@ training_generation_params.measurement_params.observation_probability = 1
 ### SETUP THE DATA GENERATION PARAMS, MODIFYING SOME FIELDS FROM THE TRAINING SET
 
 data_generation_params = training_generation_params.copy()
-data_generation_params.measurement_params.noise_variance = 5E-3
-data_generation_params.measurement_params.clutter_rate = 1E-5
+data_generation_params.measurement_params.noise_variance = 4E-3
+data_generation_params.measurement_params.clutter_rate = 7E-5
 
 
 DATASET_NAME = "batch_ojsp_tv"
 
 NUM_TRAINING_SETS = 1
-NUM_TESTS = 20
+NUM_TESTS = 100
 testset = TestsetManager()
 
 for training_ind in range(NUM_TRAINING_SETS):
@@ -76,7 +76,7 @@ for test_ind in range(NUM_TESTS):
     dm.generation_params = data_generation_params
     dm.process_coefficients = true_process_coefficients
     
-    if test_ind % 5 == 0:
+    if test_ind in [0, 5, 10, 15, 20]:
         results.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, f"{DATASET_NAME}_trajectory_d_{test_ind + 1}" if test_ind == 0 else None)
     testset.add_dataset(dm)
 

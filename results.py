@@ -72,10 +72,10 @@ SECONDARY_SCATTER_STYLE_KWARGS = {
     "marker": "."
 }
 CLUTTER_SCATTER_STYLE_KWARGS = {
-    "s": 25,
+    "s": 64,
     "marker": CLUTTER_MARKER,
     "c": GREY,
-    "alpha": 1,
+    "alpha": 0.75,
 }
 
 ERROR_BAR_STYLE_KWARGS = {

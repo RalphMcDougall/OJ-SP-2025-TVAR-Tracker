@@ -41,7 +41,7 @@ training_generation_params.measurement_params.observation_probability = 1
 
 data_generation_params = training_generation_params.copy()
 data_generation_params.measurement_params.noise_variance = 5E-2
-data_generation_params.measurement_params.clutter_rate = 1E-6
+data_generation_params.measurement_params.clutter_rate = 5E-6
 
 
 DATASET_NAME = "batch_ojsp_proper_cv"
@@ -74,7 +74,7 @@ for test_ind in range(NUM_TESTS):
     dm.generation_params = data_generation_params
     dm.process_coefficients = true_process_coefficients
     
-    if test_ind % 5 == 0:
+    if test_ind in [0, 5, 10, 15, 20]:
         results.plot_trajectory_plot(None, data, ground_truth_position, data_generation_params, None)
     testset.add_dataset(dm)
 

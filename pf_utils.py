@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import scipy.special
 
 import settings 
 import foo_utils
@@ -93,14 +94,13 @@ def construct_initial_particles(params : settings.TVARTrackerParameters, ground_
         ma_init = np.array([np.zeros((params.model_order, 1)) for _ in range(params.num_particles)])
         ma_init[:,:,:] = construct_parameter_prior_mean(params.model_order)[None,:,None]
         Pa_init = np.array([np.identity(params.model_order) for _ in range(params.num_particles)]) * np.max([params.state_innovation_to_process_innovation, 1E-2])
-    
     if params.sigma_oracle_prior:
         alpha_init = np.ones((params.num_particles, 1)) * 1E12
         beta_init  = np.ones((params.num_particles, 1)) * 1E12 * params.process_instance_params.innovation_variance
     else:
         # A relatively uninformative scale prior
-        alpha_init = np.ones((params.num_particles, 1)) * 3
-        beta_init  = np.ones((params.num_particles, 1)) * 2
+        alpha_init = np.ones((params.num_particles, 1)) * 6
+        beta_init  = np.ones((params.num_particles, 1)) * 5
     assoc_init = np.zeros((params.num_particles, 1))
 
     log_weights_init = np.zeros(params.num_particles) - np.log(params.num_particles)
@@ -411,8 +411,10 @@ def unpack_particle_history(particle_history : list[ParticleCloud], params : set
         log_eff_num_particles = foo_utils.log_effective_num_particles(log_weights)
         effective_num_particles_history[current_timestep] = np.exp(log_eff_num_particles)
 
-        all_z, ma, Pa, alpha, beta = particles.Z, particles.ma, particles.Pa, particles.alpha, particles.beta
+        all_z, ma, normalised_Pa, alpha, beta = particles.Z, particles.ma, particles.Pa, particles.alpha, particles.beta
         weights = np.exp(log_weights)
+
+        Pa = normalised_Pa * ((particles.beta / (particles.alpha - 1))[:,:,None])
 
         a_mean_history[current_timestep, :] = np.sum(ma * weights[:, None, None], axis=0).flatten()
         mean_diff = ma[:, :, 0] - a_mean_history[current_timestep, :]
@@ -448,7 +450,10 @@ def get_particle_mse(ground_truth : np.ndarray, particles : ParticleCloud):
     diffs = ground_truth[None,:] - particles.Z[:,:,0]
     assert diffs.shape == (particles.num_particles, ground_truth.size), f"Diffs shape does not match expected shape: {diffs.shape} vs ({particles.num_particles}, {ground_truth.size})"
     
-    prod_terms = np.log(np.sum(diffs ** 2, axis=1)) + particles.log_weights[:]
+    log_diff_sums = np.log(np.sum(diffs ** 2, axis=1))
+    assert log_diff_sums.shape == particles.log_weights[:].shape, f"Log diff sums and particle log weights must have the same shape: {log_diff_sums.shape} vs {particles.log_weights[:].shape}"
+    
+    prod_terms = log_diff_sums + particles.log_weights[:]
     assert prod_terms.size == particles.num_particles, f"Prod terms size does not match num particles, {prod_terms.size} vs {particles.num_particles}"
     
     log_err = np.logaddexp.reduce(prod_terms)

@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 import settings 
 import pf_utils 
-import classic_models
+import comparison_models
 
 
 def optimise_tvar_tracker(cluttered_data : list[np.ndarray], ground_truth_position : np.ndarray, true_process_coefficients : np.ndarray, tvar_tracker_params : settings.TVARTrackerParameters):
@@ -43,8 +43,8 @@ def optimise_cv_tracker(cluttered_data : np.ndarray, ground_truth_position : np.
     for pars in tqdm(cv_params_range):
         test_params = cv_tracker_params.copy()
         test_params.state_dynamic_variance = pars
-        model = classic_models.setup_cv(ground_truth_position, test_params)
-        value = classic_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        model = comparison_models.setup_cv(ground_truth_position, test_params)
+        value = comparison_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
         if value > best_value:
             best_value = value 
             best_pars = pars
@@ -66,8 +66,8 @@ def optimise_wna_tracker(cluttered_data : np.ndarray, ground_truth_position : np
     for pars in tqdm(wna_params_range):
         test_params = wna_tracker_params.copy()
         test_params.state_dynamic_variance = pars
-        model = classic_models.setup_wna(ground_truth_position, test_params)
-        value = classic_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        model = comparison_models.setup_wna(ground_truth_position, test_params)
+        value = comparison_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
         if value > best_value:
             best_value = value 
             best_pars = pars
@@ -80,7 +80,7 @@ def optimise_wna_tracker(cluttered_data : np.ndarray, ground_truth_position : np
 
 
 def optimise_wcm_ar_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, wcm_ar_tracker_params : settings.CovarianceMethodARParameters):
-    print(f"{colorama.Fore.CYAN}Optimising CM-AR")
+    print(f"{colorama.Fore.CYAN}Optimising WCM-AR")
     wcm_ar_params_range = np.logspace(start=-2, stop=2, num=100)
     best_value = -np.inf 
     best_pars = None 
@@ -88,8 +88,8 @@ def optimise_wcm_ar_tracker(cluttered_data : np.ndarray, ground_truth_position :
     for pars in tqdm(wcm_ar_params_range):
         test_params = wcm_ar_tracker_params.copy()
         test_params.state_dynamic_variance = pars
-        model = classic_models.setup_windowed_covariance_method_ar(ground_truth_position, test_params)
-        value = classic_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        model = comparison_models.setup_windowed_covariance_method_ar(ground_truth_position, test_params)
+        value = comparison_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
         if value > best_value:
             best_value = value 
             best_pars = pars
@@ -105,8 +105,8 @@ def optimise_singer_tracker(cluttered_data : np.ndarray, ground_truth_position :
     print(f"{colorama.Fore.CYAN}Optimising Singer")
     singer_params_range = []
 
-    scale_range = np.logspace(start=-1, stop=2, num=10)
-    alpha_range = np.logspace(start=-2, stop=1, num=10)
+    scale_range = np.logspace(start=-1, stop=1, num=10)
+    alpha_range = np.logspace(start=-2, stop=np.log10(-np.log(1 / 20)), num=10)
 
     for scale in scale_range:
         for alpha in alpha_range:
@@ -118,8 +118,8 @@ def optimise_singer_tracker(cluttered_data : np.ndarray, ground_truth_position :
         test_params = singer_tracker_params.copy()
         test_params.state_dynamic_variance = pars[0]
         test_params.singer_rate = pars[1]
-        model = classic_models.setup_singer(ground_truth_position, test_params)
-        value = classic_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        model = comparison_models.setup_singer(ground_truth_position, test_params)
+        value = comparison_models.get_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
         if value > best_value:
             best_value = value 
             best_pars = pars
@@ -137,9 +137,9 @@ def optimise_double_singer_imm(cluttered_data : np.ndarray, ground_truth_positio
     imm_params_range = []
 
     scale_range_1 = np.logspace(start=-1, stop=1, num=8)
-    alpha_range_1 = np.logspace(start=-1, stop=1, num=8)
+    alpha_range_1 = np.logspace(start=-1, stop=np.log10(-np.log(1 / 20)), num=8)
     scale_range_2 = np.logspace(start=-1, stop=1, num=8)
-    alpha_range_2 = np.logspace(start=-1, stop=1, num=8)
+    alpha_range_2 = np.logspace(start=-1, stop=np.log10(-np.log(1 / 20)), num=8)
 
     for scale_1 in scale_range_1:
         for alpha_1 in alpha_range_1:
@@ -161,8 +161,8 @@ def optimise_double_singer_imm(cluttered_data : np.ndarray, ground_truth_positio
         test_params.model_params[1].state_dynamic_variance = pars[2]
         test_params.model_params[1].singer_rate = pars[3]
 
-        model = classic_models.setup_double_singer_imm(ground_truth_position, test_params)
-        value = classic_models.get_imm_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
+        model = comparison_models.setup_double_singer_imm(ground_truth_position, test_params)
+        value = comparison_models.get_imm_model_performance(model, cluttered_data, ground_truth_position, burn_in, test_params)
 
         if value > best_value:
             best_value = value
@@ -174,13 +174,13 @@ def optimise_double_singer_imm(cluttered_data : np.ndarray, ground_truth_positio
 
 
 def optimise_jin2017_tracker(cluttered_data : np.ndarray, ground_truth_position : np.ndarray, burn_in : int, jin2017_tracker_params : settings.Jin2017TrackerParameters, data_generation_params : settings.DataGenerationParameters):
-    print(f"{colorama.Fore.CYAN}Optimising Jin2017")
+    print(f"{colorama.Fore.CYAN}Optimising JinAR2017")
     jin2017_params_range = []
 
-    for polynomial_order in range(1, 5):
-        for model_order in range(polynomial_order + 2, 8):
+    for polynomial_order in range(1, 4):
+        for model_order in range(polynomial_order + 2, 6):
             for window_size in range(10, 60, 10):
-                for innovation_variance in np.logspace(start=1E-1, stop=1E0, num=10):
+                for innovation_variance in np.logspace(start=-1, stop=1, num=10):
                     jin2017_params_range.append([model_order, polynomial_order, window_size, innovation_variance])
     
     best_value = -np.inf 
@@ -194,7 +194,7 @@ def optimise_jin2017_tracker(cluttered_data : np.ndarray, ground_truth_position 
         test_params.window = pars[2]
         test_params.innovation_variance = pars[3]
 
-        value = classic_models.get_jin2017_model_performance(cluttered_data, ground_truth_position, data_generation_params, test_params, burn_in)
+        value = comparison_models.get_jin2017_model_performance(cluttered_data, ground_truth_position, data_generation_params, test_params, burn_in)
 
         if value > best_value:
             best_value = value

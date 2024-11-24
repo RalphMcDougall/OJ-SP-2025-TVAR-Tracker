@@ -1,6 +1,6 @@
 import numpy as np
 
-import classic_models
+import comparison_models
 import settings
 import foo_utils
 
@@ -232,8 +232,8 @@ def generate_real_cv_dataset(data_generation_params : settings.DataGenerationPar
     state[3] = np.random.uniform(low=0, high=5)
 
     Ts = 1
-    cov = classic_models.WhiteNoiseAcceleration.Q(Ts, data_generation_params.ar_generation_params.innovation_variance)
-    A = classic_models.WhiteNoiseAcceleration.A(Ts)
+    cov = comparison_models.WhiteNoiseAcceleration.Q(Ts, data_generation_params.ar_generation_params.innovation_variance)
+    A = comparison_models.WhiteNoiseAcceleration.A(Ts)
 
     ground_truth_position = np.zeros((data_generation_params.simulation_time, data_generation_params.observation_dimensions))
     for ts in range(data_generation_params.simulation_time):
