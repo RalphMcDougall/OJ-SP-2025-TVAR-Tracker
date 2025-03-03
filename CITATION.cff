@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Target Tracking Using a Time-Varying Autoregressive Dynamic Model"
+type: software
+authors:
+  - family-names: McDougall
+    given-names: Ralph J. 
+    orcid: https://orcid.org/0009-0006-8041-5522
+  - family-names: Godsill
+    given-names: Simon J.
+    orcid: https://orcid.org/0000-0001-9522-9681
+version: 1.0.0
+preferred-citation:
+  title: "Target Tracking Using a Time-Varying Autoregressive Dynamic Model"
+  authors:
+    - family-names: McDougall
+      given-names: Ralph J. 
+      orcid: https://orcid.org/0009-0006-8041-5522
+    - family-names: Godsill
+      given-names: Simon J.
+      orcid: https://orcid.org/0000-0001-9522-9681
+  identifiers:
+    - type: doi
+      value: 10.1109/OJSP.2025.3528896
+  type: article
+
+date-released: 2025-01-14
