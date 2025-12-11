@@ -1,4 +1,4 @@
-# OJ-SP-2025-TVAR-Tracker
+# Time-Varying Autoregressive model for Object Tracking
 A record of the code used to produce the results for our paper in the IEEE Open Journal of Signal Processing.
 The paper is available open source [here](https://ieeexplore.ieee.org/document/10840270).
 The results of this project were presented at the [International Conference on Acoustics Speech and Signal Processing](https://2025.ieeeicassp.org/) (ICASSP) in Hyderabad, India, in April 2025.
